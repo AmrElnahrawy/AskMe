@@ -6,12 +6,13 @@ struct system_users
     int id;
     string name;
     string password;
+    int status{1};
 };
 
 struct main_system
 {
     map<int, system_users> users_data;
-    int ids{1};
+    int ids{10};
 
     int load_data()
     {
@@ -22,13 +23,17 @@ struct main_system
             return 0;
         }
         string user;
+        int id;
         while (getline(ud, user))
         {
             istringstream iss(user);
-            iss >> users_data[ids].id;
-            iss >> users_data[ids].name;
-            iss >> users_data[ids].password;
-            ids++;
+            iss >> id;
+            users_data[id].id = id;
+            iss >> users_data[id].name;
+            iss >> users_data[id].password;
+            iss >> users_data[id].status;
+            if (id >= ids)
+                ids++;
         }
         ud.close();
         return 1;
@@ -47,25 +52,27 @@ struct main_system
             while (true)
             {
                 choice = second_menu();
-                // if (choice == 1)
-                //     questions_to_me();
-                // else if (choice == 2)
-                //     questions_from_me();
-                // else if (choice == 3)
-                //     answer_question();
-                // else if (choice == 4)
-                //     delete_question();
-                // else if (choice == 5)
-                //     ask_question();
-                // else if (choice == 6)
-                //     list_system_users();
-                // else if (choice == 7)
-                //     feed();
-                /* else */if (choice == 8) {
+                if (choice == 1)
+                    user_sittings(account);
+                else if (choice == 2)
+                    questions_to_me();
+                else if (choice == 3)
+                    questions_from_me();
+                else if (choice == 4)
+                    answer_question();
+                else if (choice == 5)
+                    delete_question();
+                else if (choice == 6)
+                    ask_question();
+                else if (choice == 7)
+                    list_system_users();
+                else if (choice == 8)
+                    feed();
+                else if (choice == 9)
+                {
                     cout << "***********************************" << endl;
                     break;
                 }
-                   
             }
         }
     }
@@ -187,13 +194,16 @@ struct main_system
             }
             break;
         }
-        users_data.insert({ids, {ids, name, password}});
+        users_data.insert({ids, {ids, name, password, 1}});
         ud << users_data[ids].id << " ";
         ud << users_data[ids].name << " ";
-        ud << users_data[ids].password << endl;
-        ids++;
+        ud << users_data[ids].password << " ";
+        ud << users_data[ids].status << endl;
         ud.close();
         cout << "***********************************" << endl;
+        cout << "Welcome " << users_data[ids].name << ", your id is [" << users_data[ids].id << "]" << endl;
+        cout << "***********************************" << endl;
+        ids++;
         return ids - 1;
     }
 
@@ -203,17 +213,19 @@ struct main_system
         while (true)
         {
             cout << "Menu:" << endl;
-            cout << "\t1) Print Questions To Me" << endl;
-            cout << "\t2) Print Questions From Me" << endl;
-            cout << "\t3) Answer Question" << endl;
-            cout << "\t4) Delete Question" << endl;
-            cout << "\t5) Ask Question" << endl;
-            cout << "\t6) List System Users" << endl;
-            cout << "\t7) Feed" << endl;
-            cout << "\t8) Logout" << endl << endl;
+            cout << "\t1) User Sittings" << endl;
+            cout << "\t2) Print Questions To Me" << endl;
+            cout << "\t3) Print Questions From Me" << endl;
+            cout << "\t4) Answer Question" << endl;
+            cout << "\t5) Delete Question" << endl;
+            cout << "\t6) Ask Question" << endl;
+            cout << "\t7) List System Users" << endl;
+            cout << "\t8) Feed" << endl;
+            cout << "\t9) Logout" << endl
+                 << endl;
             cout << "Enter number in range (1 - 8): ";
             getline(cin, schoice);
-            if (schoice.size() != 1 || !(int('1') <= (int)schoice[0] && (int)schoice[0] <= int('8')))
+            if (schoice.size() != 1 || !(int('1') <= (int)schoice[0] && (int)schoice[0] <= int('9')))
             {
                 cout << "ERROR: Invalid input...Try again" << endl;
                 cout << "***********************************" << endl;
@@ -222,6 +234,95 @@ struct main_system
             int choice = (int)schoice[0] - '0';
             return choice;
         }
+    }
+
+    void user_sittings(int id)
+    {
+        fstream ud("users_data.txt", ios::app);
+        if (ud.fail())
+        {
+            cout << "Sorry, the system can't change sittings right now" << endl;
+            return;
+        }
+        int status = users_data[id].status;
+        string schoice;
+        while (true)
+        {
+            if (status == 1)
+            {
+                cout << "Your name is public" << endl;
+                cout << "\t1) Change to anonymous" << endl;
+                cout << "\t2) Return" << endl
+                     << endl;
+            }
+            else if (status == 2)
+            {
+                cout << "Your name is anonymous" << endl;
+                cout << "\t1) Change to public" << endl;
+                cout << "\t2) Return" << endl
+                     << endl;
+            }
+            cout << "Enter number in range (1 - 2): ";
+            getline(cin, schoice);
+            if (schoice.size() != 1 || !(schoice[0] == '1' || schoice[0] == '2'))
+            {
+                cout << "ERROR: Invalid input...Try again" << endl;
+                cout << "***********************************" << endl;
+                continue;
+            }
+            if (schoice[0] == '2')
+                return;
+            if (status == 1)
+                users_data[id].status = 2;
+            else
+                users_data[id].status = 1;
+            break;
+        }
+        ud << users_data[id].id << " ";
+        ud << users_data[id].name << " ";
+        ud << users_data[id].password << " ";
+        ud << users_data[id].status << endl;
+        cout << "***********************************" << endl;
+        ud.close();
+    }
+
+    void questions_to_me()
+    {
+    }
+
+    void questions_from_me()
+    {
+    }
+
+    void answer_question()
+    {
+    }
+
+    void delete_question()
+    {
+    }
+
+    void ask_question()
+    {
+    }
+
+    void list_system_users()
+    {
+        if (users_data.empty()) {
+            cout << "No users in the database" << endl;
+            cout << "***********************************" << endl;
+            return;
+        }
+        cout << "***********************************" << endl;
+        for (const auto &pair : users_data)
+        {
+            cout << "ID: " << pair.first << "\tName: " << pair.second.name << endl;
+        }
+        cout << "***********************************" << endl;
+    }
+
+    void feed()
+    {
     }
 };
 
