@@ -361,9 +361,9 @@ struct main_system
                 {
                     if (it2->second.parent_id == it->second.id && it2->second.deleted == 0)
                     {
-                        cout << "Thread: Question ID (" << it2->second.id << ")" << (it2->second.questions_status == 1 ? " from user " + users_data[it2->second.from].name + " ID (" + to_string(it2->second.from) + ")" : "") << endl;
-                        cout << "\tQuestion: " << it2->second.question << endl;
-                        cout << (it2->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it2->second.answer + "\n") << endl;
+                        cout << "\tThread: Question ID (" << it2->second.id << ")" << (it2->second.questions_status == 1 ? " from user " + users_data[it2->second.from].name + " ID (" + to_string(it2->second.from) + ")" : "") << endl;
+                        cout << "\t\tQuestion: " << it2->second.question << endl;
+                        cout << (it2->second.answer.empty() ? "\t\tNot answered yet\n" : "\t\tAnswer: " + it2->second.answer + "\n") << endl;
                     }
                 }
             }
@@ -389,9 +389,9 @@ struct main_system
                 {
                     if (it2->second.parent_id == it->second.id && it2->second.deleted == 0 && it2->second.from == account)
                     {
-                        cout << "Thread: Question ID (" << it2->second.id << ")" << (it2->second.questions_status == 2 ? " !AQ " : "") << "to user " << users_data[it2->second.to].name << " ID (" << it2->second.to << ")" << endl;
-                        cout << "\tQuestion: " << it2->second.question << endl;
-                        cout << (it2->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it2->second.answer + "\n") << endl;
+                        cout << "\tThread: Question ID (" << it2->second.id << ")" << (it2->second.questions_status == 2 ? " !AQ " : "") << "to user " << users_data[it2->second.to].name << " ID (" << it2->second.to << ")" << endl;
+                        cout << "\t\tQuestion: " << it2->second.question << endl;
+                        cout << (it2->second.answer.empty() ? "\t\tNot answered yet\n" : "\t\tAnswer: " + it2->second.answer + "\n") << endl;
                     }
                 }
             }
@@ -408,7 +408,72 @@ struct main_system
 
     void delete_question(int account)
     {
-        return;
+        fstream qd("questions_data.txt", ios::app);
+        if (qd.fail())
+        {
+            cout << "Sorry, can't delete questions right now" << endl;
+            return;
+        }
+        string sinput;
+        int flag = 1, input;
+        while (true)
+        {
+            cout << "Enter Question id or 0 to cancel: ";
+            getline(cin, sinput);
+            if (sinput.find(' ') != string::npos || !is_digit(sinput))
+            {
+                cout << "ERROR: Invalid input...Try again" << endl;
+                cout << "***********************************" << endl;
+                continue;
+            }
+            input = stoi(sinput);
+            if (input == 0)
+                return;
+            for (auto &pair : questions)
+            {
+                if (input == pair.first)
+                {
+                    if (account != pair.second.from)
+                    {
+                        flag = 2;
+                        break;
+                    }
+                    flag = 0;
+                    break;
+                }
+            }
+            if (flag == 1)
+            {
+                cout << "ERROR: Question doesn't exist...Try again" << endl;
+                cout << "***********************************" << endl;
+                continue;
+            }
+            else if (flag == 2)
+            {
+                cout << "ERROR: your are not the owner of the Question " << endl;
+                cout << "***********************************" << endl;
+                break;
+            }
+            if (questions[input].deleted == 1)
+            {
+                cout << "ERROR: Question is already deleted" << endl;
+                cout << "***********************************" << endl;
+                break;
+            }
+            cout << "***********************************" << endl;
+            questions[input].deleted = 1;
+            qd << questions[input].id << " ";
+            qd << questions[input].parent_id << " ";
+            qd << questions[input].questions_status << " ";
+            qd << questions[input].from << " ";
+            qd << questions[input].to << " ";
+            qd << questions[input].deleted << " ";
+            qd << questions[input].question << " ";
+            qd << "#" <<  " ";
+            qd << questions[input].answer << endl;
+            qd.close();
+            break;
+        }
     }
 
     void ask_question(int account)
@@ -570,11 +635,11 @@ struct main_system
                 {
                     if (it2->second.parent_id == it->second.id && it2->second.deleted == 0)
                     {
-                        cout << "Thread: Question ID (" << it2->second.id << ")"
+                        cout << "\tThread: Question ID (" << it2->second.id << ")"
                              << (it2->second.questions_status == 1 ? " from user " + users_data[it2->second.from].name + " ID (" + to_string(it2->second.from) + ")" : "")
                              << " to user " << users_data[it2->second.to].name << " ID (" << it2->second.to << ")" << endl;
-                        cout << "\tQuestion: " << it2->second.question << endl;
-                        cout << (it2->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it2->second.answer + "\n") << endl;
+                        cout << "\t\tQuestion: " << it2->second.question << endl;
+                        cout << (it2->second.answer.empty() ? "\t\tNot answered yet\n" : "\t\tAnswer: " + it2->second.answer + "\n") << endl;
                     }
                 }
             }
@@ -587,6 +652,10 @@ struct main_system
 
 int main()
 {
+    fstream file1("users_data.txt", ios::app);
+    fstream file2("questions_data.txt", ios::app);
+    file1.close();
+    file2.close();
     main_system AskMe;
     AskMe.run();
     return 0;
