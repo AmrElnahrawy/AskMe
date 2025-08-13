@@ -1,10 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int is_digit(string num) {
+int is_digit(string num)
+{
     if (num == "-1")
         return 1;
-    for (char i : num) {
+    for (char i : num)
+    {
         if (!('0' <= i && i <= '9'))
             return 0;
     }
@@ -22,7 +24,7 @@ struct system_users
 struct users_questions
 {
     int id;
-    int parent_id{-1};
+    int parent_id{0};
     int questions_status{1};
     int from;
     int to;
@@ -50,6 +52,8 @@ struct main_system
         int id;
         while (getline(ud, user))
         {
+            if (user.empty())
+                continue;
             istringstream iss(user);
             iss >> id;
             users_data[id].id = id;
@@ -75,6 +79,8 @@ struct main_system
         int id;
         while (getline(qd, question))
         {
+            if (question.empty())
+                continue;
             istringstream iss(question);
             iss >> id;
             questions[id].id = id;
@@ -84,9 +90,8 @@ struct main_system
             iss >> questions[id].to;
             iss >> questions[id].deleted;
             string str, qstr = "", astr = "";
-            while (qstr != "#")
+            while (iss >> str && str != "#")
             {
-                iss >> str;
                 qstr += str + " ";
             }
             questions[id].question = qstr;
@@ -122,13 +127,13 @@ struct main_system
                 if (choice == 1)
                     user_settings(account);
                 else if (choice == 2)
-                    questions_to_me();
+                    questions_to_me(account);
                 else if (choice == 3)
-                    questions_from_me();
+                    questions_from_me(account);
                 else if (choice == 4)
-                    answer_question();
+                    answer_question(account);
                 else if (choice == 5)
-                    delete_question();
+                    delete_question(account);
                 else if (choice == 6)
                     ask_question(account);
                 else if (choice == 7)
@@ -340,20 +345,70 @@ struct main_system
         ud.close();
     }
 
-    void questions_to_me()
+    void questions_to_me(int account)
     {
+        int flag = 1;
+        cout << "***********************************" << endl;
+        for (auto it = questions.begin(); it != questions.end(); ++it)
+        {
+            if (it->second.parent_id == 0 && it->second.to == account && it->second.deleted == 0)
+            {
+                flag = 0;
+                cout << "Question ID (" << it->second.id << ")" << (it->second.questions_status == 1 ? " from user " + users_data[it->second.from].name + " ID (" + to_string(it->second.from) + ")" : "") << endl;
+                cout << "\tQuestion: " << it->second.question << endl;
+                cout << (it->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it->second.answer + "\n") << endl;
+                for (auto it2 = it; it2 != questions.end(); ++it2)
+                {
+                    if (it2->second.parent_id == it->second.id && it2->second.deleted == 0)
+                    {
+                        cout << "Thread: Question ID (" << it2->second.id << ")" << (it2->second.questions_status == 1 ? " from user " + users_data[it2->second.from].name + " ID (" + to_string(it2->second.from) + ")" : "") << endl;
+                        cout << "\tQuestion: " << it2->second.question << endl;
+                        cout << (it2->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it2->second.answer + "\n") << endl;
+                    }
+                }
+            }
+        }
+        if (flag)
+            cout << "No Questions" << endl;
+        cout << "***********************************" << endl;
     }
 
-    void questions_from_me()
+    void questions_from_me(int account)
     {
+        int flag = 1;
+        cout << "***********************************" << endl;
+        for (auto it = questions.begin(); it != questions.end(); ++it)
+        {
+            if (it->second.parent_id == 0 && it->second.from == account && it->second.deleted == 0)
+            {
+                flag = 0;
+                cout << "Question ID (" << it->second.id << ")" << (it->second.questions_status == 2 ? " !AQ " : "") << "to user " << users_data[it->second.to].name << " ID (" << it->second.to << ")" << endl;
+                cout << "\tQuestion: " << it->second.question << endl;
+                cout << (it->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it->second.answer + "\n") << endl;
+                for (auto it2 = it; it2 != questions.end(); ++it2)
+                {
+                    if (it2->second.parent_id == it->second.id && it2->second.deleted == 0 && it2->second.from == account)
+                    {
+                        cout << "Thread: Question ID (" << it2->second.id << ")" << (it2->second.questions_status == 2 ? " !AQ " : "") << "to user " << users_data[it2->second.to].name << " ID (" << it2->second.to << ")" << endl;
+                        cout << "\tQuestion: " << it2->second.question << endl;
+                        cout << (it2->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it2->second.answer + "\n") << endl;
+                    }
+                }
+            }
+        }
+        if (flag)
+            cout << "No Questions" << endl;
+        cout << "***********************************" << endl;
     }
 
-    void answer_question()
+    void answer_question(int account)
     {
+        return;
     }
 
-    void delete_question()
+    void delete_question(int account)
     {
+        return;
     }
 
     void ask_question(int account)
@@ -364,22 +419,28 @@ struct main_system
             cout << "Sorry, can't add questions right now" << endl;
             return;
         }
-        string suid, sanon, sqid, question;
-        int flag{1}, uid, anon, qid;
+        string suid, sanon, sqpid, question;
+        int flag{1}, uid, anon, qpid;
         while (true)
         {
-            cout << "Enter user ID or -1 to cancel: ";
+            cout << "Enter user ID or 0 to cancel: ";
             getline(cin, suid);
-            if (suid.find(' ') != string::npos && is_digit(suid))
+            if (suid.find(' ') != string::npos || !is_digit(suid))
             {
                 cout << "ERROR: Invalid input...Try again" << endl;
                 cout << "***********************************" << endl;
                 continue;
             }
             uid = stoi(suid);
+            if (uid == account)
+            {
+                cout << "ERROR: Can't ask yourself" << endl;
+                cout << "***********************************" << endl;
+                continue;
+            }
             for (auto &pair : users_data)
             {
-                if (uid == -1 || uid == pair.first)
+                if (uid == 0 || uid == pair.first)
                 {
                     flag = 0;
                     break;
@@ -393,7 +454,7 @@ struct main_system
             }
             break;
         }
-        if (uid == -1)
+        if (uid == 0)
         {
             cout << "***********************************" << endl;
             return;
@@ -408,7 +469,7 @@ struct main_system
             while (true)
             {
                 cout << "Enter 2 for anonymous question else 1: ";
-                 getline(cin, sanon);
+                getline(cin, sanon);
                 if (sanon.find(' ') != string::npos && !(sanon[0] == '1' || sanon[0] == '2'))
                 {
                     cout << "ERROR: Invalid input...Try again" << endl;
@@ -419,20 +480,23 @@ struct main_system
                 break;
             }
         }
+        flag = 1;
         while (true)
         {
-            cout << "For thread question enter Question ID or -1 for new question: " << endl;
-             getline(cin, sqid);
-            if (sqid.find(' ') != string::npos && is_digit(sqid))
+            cout << "For thread question enter Question ID or 0 for new question: ";
+            getline(cin, sqpid);
+            if (sqpid.find(' ') != string::npos || !is_digit(sqpid))
             {
                 cout << "ERROR: Invalid input...Try again" << endl;
                 cout << "***********************************" << endl;
                 continue;
             }
-            qid = stoi(sqid);
+            qpid = stoi(sqpid);
+            if (qpid == 0)
+                break;
             for (auto &pair : questions)
             {
-                if (qid == -1 || qid == pair.second.parent_id)
+                if (qpid == pair.second.id && pair.second.parent_id == 0 && pair.second.deleted == 0)
                 {
                     flag = 0;
                     break;
@@ -459,7 +523,7 @@ struct main_system
             cout << "***********************************" << endl;
             break;
         }
-        questions.insert({questions_ids, {questions_ids, qid, anon, account, uid, 0, question, ""}});
+        questions.insert({questions_ids, {questions_ids, qpid, anon, account, uid, 0, question, ""}});
         qd << questions[questions_ids].id << " ";
         qd << questions[questions_ids].parent_id << " ";
         qd << questions[questions_ids].questions_status << " ";
@@ -472,8 +536,7 @@ struct main_system
         qd.close();
     }
 
-    void
-    list_system_users()
+    void list_system_users()
     {
         if (users_data.empty())
         {
@@ -491,6 +554,34 @@ struct main_system
 
     void feed()
     {
+        int flag = 1;
+        cout << "***********************************" << endl;
+        for (auto it = questions.begin(); it != questions.end(); ++it)
+        {
+            if (it->second.parent_id == 0 && it->second.deleted == 0)
+            {
+                flag = 0;
+                cout << "Question ID (" << it->second.id << ")"
+                     << (it->second.questions_status == 1 ? " from user " + users_data[it->second.from].name + " ID (" + to_string(it->second.from) + ")" : "")
+                     << " to user " << users_data[it->second.to].name << " ID (" << it->second.to << ")" << endl;
+                cout << "\tQuestion: " << it->second.question << endl;
+                cout << (it->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it->second.answer + "\n") << endl;
+                for (auto it2 = it; it2 != questions.end(); ++it2)
+                {
+                    if (it2->second.parent_id == it->second.id && it2->second.deleted == 0)
+                    {
+                        cout << "Thread: Question ID (" << it2->second.id << ")"
+                             << (it2->second.questions_status == 1 ? " from user " + users_data[it2->second.from].name + " ID (" + to_string(it2->second.from) + ")" : "")
+                             << " to user " << users_data[it2->second.to].name << " ID (" << it2->second.to << ")" << endl;
+                        cout << "\tQuestion: " << it2->second.question << endl;
+                        cout << (it2->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it2->second.answer + "\n") << endl;
+                    }
+                }
+            }
+        }
+        if (flag)
+            cout << "No Questions" << endl;
+        cout << "***********************************" << endl;
     }
 };
 
