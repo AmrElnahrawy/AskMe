@@ -6,13 +6,22 @@ struct system_users
     int id;
     string name;
     string password;
-    int status{1};
+    int user_status{1};
+    int questions_status{1};
+};
+
+struct user_questions
+{
+    int id;
+    string question;
+    string answer;
 };
 
 struct main_system
 {
     map<int, system_users> users_data;
-    int ids{10};
+    int users_ids{10};
+    map<int, vector<user_questions>> questions;
 
     int load_data()
     {
@@ -31,9 +40,9 @@ struct main_system
             users_data[id].id = id;
             iss >> users_data[id].name;
             iss >> users_data[id].password;
-            iss >> users_data[id].status;
-            if (id >= ids)
-                ids++;
+            iss >> users_data[id].user_status;
+            if (id >= users_ids)
+                users_ids++;
         }
         ud.close();
         return 1;
@@ -194,17 +203,18 @@ struct main_system
             }
             break;
         }
-        users_data.insert({ids, {ids, name, password, 1}});
-        ud << users_data[ids].id << " ";
-        ud << users_data[ids].name << " ";
-        ud << users_data[ids].password << " ";
-        ud << users_data[ids].status << endl;
+        users_data.insert({users_ids, {users_ids, name, password}});
+        ud << users_data[users_ids].id << " ";
+        ud << users_data[users_ids].name << " ";
+        ud << users_data[users_ids].password << " ";
+        ud << users_data[users_ids].user_status << " ";
+        ud << users_data[users_ids].questions_status << endl;
         ud.close();
         cout << "***********************************" << endl;
-        cout << "Welcome " << users_data[ids].name << ", your id is [" << users_data[ids].id << "]" << endl;
+        cout << "Welcome " << users_data[users_ids].name << ", your id is [" << users_data[users_ids].id << "]" << endl;
         cout << "***********************************" << endl;
-        ids++;
-        return ids - 1;
+        users_ids++;
+        return users_ids - 1;
     }
 
     int second_menu()
@@ -244,44 +254,36 @@ struct main_system
             cout << "Sorry, the system can't change sittings right now" << endl;
             return;
         }
-        int status = users_data[id].status;
+        int status = users_data[id].user_status;
         string schoice;
         while (true)
         {
-            if (status == 1)
-            {
-                cout << "Your name is public" << endl;
-                cout << "\t1) Change to anonymous" << endl;
-                cout << "\t2) Return" << endl
-                     << endl;
-            }
-            else if (status == 2)
-            {
-                cout << "Your name is anonymous" << endl;
-                cout << "\t1) Change to public" << endl;
-                cout << "\t2) Return" << endl
-                     << endl;
-            }
-            cout << "Enter number in range (1 - 2): ";
+            cout << "Your name is " << (users_data[id].user_status == 1 ? "public" : "anonymous") << ", anonymous questions are"  <<  (users_data[id].questions_status == 1 ? " allowed" : " not allowed" ) << endl;
+            cout << "\t1) Change name (public - anonymous)" << endl;
+            cout << "\t2) Allow questions (anonymous - public only)" << endl;
+            cout << "\t3) Return" << endl
+                 << endl;
+            cout << "Enter number in range (1 - 3): ";
             getline(cin, schoice);
-            if (schoice.size() != 1 || !(schoice[0] == '1' || schoice[0] == '2'))
+            if (schoice.size() != 1 || !(int('1') <= (int)schoice[0] && (int)schoice[0] <= int('3')))
             {
                 cout << "ERROR: Invalid input...Try again" << endl;
                 cout << "***********************************" << endl;
                 continue;
             }
+            if (schoice[0] == '1')
+                users_data[id].user_status == 1 ? users_data[id].user_status = 2 : users_data[id].user_status = 1;
             if (schoice[0] == '2')
+                users_data[id].questions_status == 1 ? users_data[id].questions_status = 2 : users_data[id].questions_status = 1;
+            if (schoice[0] == '3')
                 return;
-            if (status == 1)
-                users_data[id].status = 2;
-            else
-                users_data[id].status = 1;
             break;
         }
         ud << users_data[id].id << " ";
         ud << users_data[id].name << " ";
         ud << users_data[id].password << " ";
-        ud << users_data[id].status << endl;
+        ud << users_data[id].user_status << " ";
+        ud << users_data[id].questions_status << endl;
         cout << "***********************************" << endl;
         ud.close();
     }
@@ -308,7 +310,8 @@ struct main_system
 
     void list_system_users()
     {
-        if (users_data.empty()) {
+        if (users_data.empty())
+        {
             cout << "No users in the database" << endl;
             cout << "***********************************" << endl;
             return;
