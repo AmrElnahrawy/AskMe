@@ -113,16 +113,17 @@ struct main_system
     void run()
     {
         int choice{0};
-        int account;
-        load_users_data();
-        load_questions_data();
+        int account;  
         while (true)
         {
+            load_users_data();
             account = first_menu();
             if (account == 0)
                 return;
             while (true)
             {
+                load_users_data();
+                load_questions_data();
                 choice = second_menu();
                 if (choice == 1)
                     user_settings(account);
