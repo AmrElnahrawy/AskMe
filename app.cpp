@@ -227,6 +227,8 @@ struct main_system
 
     int signup()
     {
+        // if more than one user are on this page this will cause a bug
+        load_users_data(); 
         string name, password;
         fstream ud("users_data.txt", ios::app);
         if (ud.fail())
