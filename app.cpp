@@ -403,7 +403,96 @@ struct main_system
 
     void answer_question(int account)
     {
-        return;
+        fstream qd("questions_data.txt", ios::app);
+        if (qd.fail())
+        {
+            cout << "Sorry, can't answer questions right now" << endl;
+            return;
+        }
+        string sinput;
+        int flag = 1, input;
+        while (true)
+        {
+            cout << "Enter Question id or 0 to cancel: ";
+            getline(cin, sinput);
+            if (sinput.find(' ') != string::npos || !is_digit(sinput))
+            {
+                cout << "ERROR: Invalid input...Try again" << endl;
+                cout << "***********************************" << endl;
+                continue;
+            }
+            input = stoi(sinput);
+            if (input == 0)
+                return;
+            for (auto &pair : questions)
+            {
+                if (input == pair.first)
+                {
+                    if (account != pair.second.to)
+                    {
+                        flag = 2;
+                        break;
+                    }
+                    flag = 0;
+                    break;
+                }
+            }
+            if (flag == 1)
+            {
+                cout << "ERROR: Question doesn't exist...Try again" << endl;
+                cout << "***********************************" << endl;
+                continue;
+            }
+            else if (flag == 2)
+            {
+                cout << "ERROR: your are not the questioned one" << endl;
+                cout << "***********************************" << endl;
+                break;
+            }
+            if (questions[input].deleted == 1)
+            {
+                cout << "ERROR: Question is already deleted" << endl;
+                cout << "***********************************" << endl;
+                break;
+            }
+            cout << "Question ID (" << questions[input].id << ")" << (questions[input].questions_status == 1 ? " from user " + users_data[questions[input].from].name + " ID (" + to_string(questions[input].from) + ")" : "") << endl;
+            cout << "\tQuestion: " << questions[input].question << endl;
+            cout << (questions[input].answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + questions[input].answer + "\n") << endl;
+            if (!questions[input].answer.empty())
+            {
+                cout << "Warning: Already answered. Answer will be updated" << endl;
+            }
+            string answer;
+            while (true)
+            {
+                cout << "Enter answer (# is not allowed): ";
+                getline(cin, answer);
+                if (answer.find('#') != string::npos)
+                {
+                    cout << "ERROR: Invalid input...Try again" << endl;
+                    cout << "***********************************" << endl;
+                    continue;
+                }
+                cout << "***********************************" << endl;
+                break;
+            }
+            if (!questions[input].answer.empty())
+            {
+                answer = "(Edited) " + answer;
+            }
+            questions[input].answer = answer;
+            qd << questions[input].id << " ";
+            qd << questions[input].parent_id << " ";
+            qd << questions[input].questions_status << " ";
+            qd << questions[input].from << " ";
+            qd << questions[input].to << " ";
+            qd << questions[input].deleted << " ";
+            qd << questions[input].question << " ";
+            qd << "#" << " ";
+            qd << questions[input].answer << endl;
+            qd.close();
+            break;
+        }
     }
 
     void delete_question(int account)
@@ -469,7 +558,7 @@ struct main_system
             qd << questions[input].to << " ";
             qd << questions[input].deleted << " ";
             qd << questions[input].question << " ";
-            qd << "#" <<  " ";
+            qd << "#" << " ";
             qd << questions[input].answer << endl;
             qd.close();
             break;
