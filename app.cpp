@@ -181,6 +181,8 @@ struct main_system
 
     int login()
     {
+        // if more than one user are on this page this will cause a bug 
+        load_users_data();
         string name, password;
         while (true)
         {
