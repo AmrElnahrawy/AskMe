@@ -125,7 +125,9 @@ struct main_system
                 load_users_data();
                 load_questions_data();
                 choice = second_menu();
-                if (choice == 1)
+                if (choice == 0)
+                    continue;
+                else if (choice == 1)
                     user_settings(account);
                 else if (choice == 2)
                     questions_to_me(account);
@@ -290,6 +292,7 @@ struct main_system
         while (true)
         {
             cout << "Menu:" << endl;
+            cout << "\t0) Refresh" << endl;
             cout << "\t1) User Sittings" << endl;
             cout << "\t2) Print Questions To Me" << endl;
             cout << "\t3) Print Questions From Me" << endl;
@@ -302,7 +305,7 @@ struct main_system
                  << endl;
             cout << "Enter number in range (1 - 9): ";
             getline(cin, schoice);
-            if (schoice.size() != 1 || !(int('1') <= (int)schoice[0] && (int)schoice[0] <= int('9')))
+            if (schoice.size() != 1 || !(int('0') <= (int)schoice[0] && (int)schoice[0] <= int('9')))
             {
                 cout << "ERROR: Invalid input...Try again" << endl;
                 cout << "***********************************" << endl;
