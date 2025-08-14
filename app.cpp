@@ -113,7 +113,7 @@ struct main_system
     void run()
     {
         int choice{0};
-        int account;  
+        int account;
         while (true)
         {
             load_users_data();
@@ -126,7 +126,10 @@ struct main_system
                 load_questions_data();
                 choice = second_menu();
                 if (choice == 0)
+                {
+                    cout << "***********************************" << endl;
                     continue;
+                }
                 else if (choice == 1)
                     user_settings(account);
                 else if (choice == 2)
@@ -183,7 +186,7 @@ struct main_system
 
     int login()
     {
-        // if more than one user are on this page this will cause a bug 
+        // if more than one user are on this page this will cause a bug
         load_users_data();
         string name, password;
         while (true)
@@ -232,7 +235,7 @@ struct main_system
     int signup()
     {
         // if more than one user are on this page this will cause a bug
-        load_users_data(); 
+        load_users_data();
         string name, password;
         fstream ud("users_data.txt", ios::app);
         if (ud.fail())
@@ -303,7 +306,7 @@ struct main_system
             cout << "\t8) Feed" << endl;
             cout << "\t9) Logout" << endl
                  << endl;
-            cout << "Enter number in range (1 - 9): ";
+            cout << "Enter number in range (0 - 9): ";
             getline(cin, schoice);
             if (schoice.size() != 1 || !(int('0') <= (int)schoice[0] && (int)schoice[0] <= int('9')))
             {
@@ -390,14 +393,14 @@ struct main_system
             if (it->second.parent_id == 0 && it->second.from == account && it->second.deleted == 0)
             {
                 flag = 0;
-                cout << "Question ID (" << it->second.id << ")" << (it->second.questions_status == 2 ? " !AQ " : "") << "to user " << users_data[it->second.to].name << " ID (" << it->second.to << ")" << endl;
+                cout << "Question ID (" << it->second.id << ")" << (it->second.questions_status == 2 ? " !AQ" : "") << " to user " << users_data[it->second.to].name << " ID (" << it->second.to << ")" << endl;
                 cout << "\tQuestion: " << it->second.question << endl;
                 cout << (it->second.answer.empty() ? "\tNot answered yet\n" : "\tAnswer: " + it->second.answer + "\n") << endl;
                 for (auto it2 = it; it2 != questions.end(); ++it2)
                 {
                     if (it2->second.parent_id == it->second.id && it2->second.deleted == 0 && it2->second.from == account)
                     {
-                        cout << "\tThread: Question ID (" << it2->second.id << ")" << (it2->second.questions_status == 2 ? " !AQ " : "") << "to user " << users_data[it2->second.to].name << " ID (" << it2->second.to << ")" << endl;
+                        cout << "\tThread: Question ID (" << it2->second.id << ")" << (it2->second.questions_status == 2 ? " !AQ" : "") << " to user " << users_data[it2->second.to].name << " ID (" << it2->second.to << ")" << endl;
                         cout << "\t\tQuestion: " << it2->second.question << endl;
                         cout << (it2->second.answer.empty() ? "\t\tNot answered yet\n" : "\t\tAnswer: " + it2->second.answer + "\n") << endl;
                     }
@@ -642,9 +645,9 @@ struct main_system
                 break;
             }
         }
-        flag = 1;
         while (true)
         {
+            flag = 1;
             cout << "For thread question enter Question ID or 0 for new question: ";
             getline(cin, sqpid);
             if (sqpid.find(' ') != string::npos || !is_digit(sqpid))
@@ -658,15 +661,26 @@ struct main_system
                 break;
             for (auto &pair : questions)
             {
-                if (qpid == pair.second.id && pair.second.parent_id == 0 && pair.second.deleted == 0)
+                if (qpid == pair.second.id && pair.second.deleted == 0)
                 {
+                    if (pair.second.parent_id != 0)
+                    {
+                        flag = 2;
+                        break;
+                    }
                     flag = 0;
                     break;
                 }
             }
-            if (flag)
+            if (flag == 1)
             {
                 cout << "ERROR: the main question is deleted or doesn't exist" << endl;
+                cout << "***********************************" << endl;
+                continue;
+            }
+            else if (flag == 2)
+            {
+                cout << "ERROR: Can't ask a question to a thread" << endl;
                 cout << "***********************************" << endl;
                 continue;
             }
