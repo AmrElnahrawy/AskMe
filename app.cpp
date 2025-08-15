@@ -96,9 +96,8 @@ struct main_system
             }
             questions[id].question = qstr;
             iss.ignore();
-            while (iss)
+            while (iss >> str)
             {
-                iss >> str;
                 astr += str + " ";
             }
 
